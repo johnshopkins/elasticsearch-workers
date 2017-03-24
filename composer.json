@@ -1,0 +1,8 @@
+{
+  "name": "johnshopkins/elasticsearch-workers",
+  "autoload": {
+    "psr-4" : {
+      "ElasticsearchWorkers\\" : ["src/", "tests/"]
+    }
+  }
+}
