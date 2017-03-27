@@ -39,8 +39,6 @@ class ReindexWorker extends PutWorker
     $alias = $this->index;
     $this->clearAndAssignAlias($newIndex, $alias);
 
-    $this->logger->addInfo("exisiting indexes", $this->existingIndexes);
-
     // delete old index
     $this->logger->addInfo("Deleting old index...");
     foreach ($this->existingIndexes as $index) {
