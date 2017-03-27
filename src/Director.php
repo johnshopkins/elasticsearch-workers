@@ -49,7 +49,7 @@ class Director
 		)));
 	}
 
-	public function remove($node, $type)
+	public function remove($id, $type)
 	{
     return $this->gearmanClient->doBackground("{$this->namespace}_elasticsearch_delete", json_encode(array(
       "id" => $id,
