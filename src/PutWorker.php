@@ -39,17 +39,17 @@ class PutWorker extends Base
    * Put all nodes whose content type are present in
    * the array of content types passed to this function
    * into the elasticsearch engine.
-   * @param  string $index        Elasticsearch index to put content in
    * @param  array  $data         Array of content types (keys) and IDs (values)
+   * @param  string $index        Elasticsearch index to put content in
    */
-  public function putAll($index, $data)
+  public function putAll($data, $index)
   {
     foreach ($data as $type => $ids) {
 
       foreach ($ids as $id) {
 
         try {
-          $result = $this->putOne($id, $type);
+          $result = $this->putOne($id, $type, $index);
           if ($result) {
             $this->logger->addInfo("Put of post {$type}/{$id} complete.");
           }
@@ -61,7 +61,7 @@ class PutWorker extends Base
     }
   }
 
-  public function putOne($id, $type)
+  public function putOne($id, $type, $index = null)
   {
     $data = $this->getter->get($id, $type);
 
@@ -72,7 +72,7 @@ class PutWorker extends Base
     }
 
     $params = array(
-      "index" => $this->index,
+      "index" => is_null($index) ? $this->index : $index,
       "type" => $type,
       "id" => $id,
       "body" => $this->cleaner->clean($data, $type)

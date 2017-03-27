@@ -32,7 +32,7 @@ class ReindexWorker extends PutWorker
 
     // put data into new index
     $this->logger->addInfo("Putting all data into new index...");
-    $this->putAll($newIndex, $data);
+    $this->putAll($data, $newIndex);
 
     // assign new index to alias
     $this->logger->addInfo("Assigning new index to alias...");
