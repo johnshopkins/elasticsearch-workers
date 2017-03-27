@@ -14,6 +14,11 @@ class PutWorker extends Base
   {
     $workload = json_decode($job->workload());
 
+    if (!in_array($workload->type, $this->types)) {
+      $this->logger->addInfo("Type is not saved to ES");
+      return;
+    }
+
     $this->logger->addInfo("Initiating elasticsearch PUT of post #{$workload->id}...");
 
     try {
@@ -78,6 +83,8 @@ class PutWorker extends Base
   public function putOne($id, $type)
   {
     $data = $this->getter->get($id, $type);
+
+    $this->logger->addInfo("post", array($data));
 
     // data is not in the API
     if (!$data) {
