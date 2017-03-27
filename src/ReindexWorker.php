@@ -22,6 +22,7 @@ class ReindexWorker extends PutWorker
   public function reindex(\GearmanJob $job)
   {
     $workload = json_decode($job->workload());
+    $data = $workload->data;
 
     $this->logger->addInfo("Initiating elasticsearch REINDEX...");
 
@@ -31,12 +32,14 @@ class ReindexWorker extends PutWorker
 
     // put data into new index
     $this->logger->addInfo("Putting all data into new index...");
-    $this->putAll($newIndex);
+    $this->putAll($newIndex, $data);
 
     // assign new index to alias
     $this->logger->addInfo("Assigning new index to alias...");
     $alias = $this->index;
     $this->clearAndAssignAlias($newIndex, $alias);
+
+    $this->logger->addInfo("exisiting indexes", $this->existingIndexes);
 
     // delete old index
     $this->logger->addInfo("Deleting old index...");
@@ -70,7 +73,7 @@ class ReindexWorker extends PutWorker
    */
   public function getIndexesForAlias($alias)
   {
-    $index = $this->getSettingsForIndex($alias);
+    $index = (array) $this->getSettingsForIndex($alias);
 
     if (empty($index) || !is_array($index)) {
       return array();

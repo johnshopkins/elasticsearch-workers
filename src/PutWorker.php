@@ -39,42 +39,26 @@ class PutWorker extends Base
    * Put all nodes whose content type are present in
    * the array of content types passed to this function
    * into the elasticsearch engine.
-   * @param  [string] $index        Elasticsearch index to put content in
+   * @param  string $index        Elasticsearch index to put content in
+   * @param  array  $data         Array of content types (keys) and IDs (values)
    */
-  public function putAll($index)
+  public function putAll($index, $data)
   {
-      $data = array();
+    foreach ($data as $type => $ids) {
 
-      foreach ($this->types as $type) {
+      foreach ($ids as $id) {
 
-        $query = new \EntityFieldQuery();
-
-        $query->entityCondition("entity_type", "node")
-          ->entityCondition("bundle", $type)
-          ->propertyCondition("status", NODE_PUBLISHED)
-          ->fieldCondition("field_approved", "value", 1, "=");
-
-        $result = $query->execute();
-
-        if (!isset($result["node"])) continue;
-
-
-        $ids = array_keys($result["node"]);
-        $nodes = entity_load("node", $ids);
-
-
-        foreach ($nodes as $node) {
-
-          try {
-            $this->putOne($node, $index);
-            watchdog("elastic_posts", " Put of post {$type}/{$node->nid} complete.");
-          } catch (\Exception $e) {
-            $error = json_decode($e->getMessage());
-            watchdog("elastic_posts", " Put of post {$type}/{$node->nid} FAILED. Error message: {$error->error}");
+        try {
+          $result = $this->putOne($id, $type);
+          if ($result) {
+            $this->logger->addInfo("Put of post {$type}/{$id} complete.");
           }
-
+        } catch (\Exception $e) {
+          $error = $e->getMessage();
+          $this->logger->addError("Put of post {$workload->id} FAILED. Error message: {$error}");
         }
       }
+    }
   }
 
   public function putOne($id, $type)

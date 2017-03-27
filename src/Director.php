@@ -8,6 +8,10 @@ class Director
 {
 	public function __construct($settings = array())
 	{
+		// function that retrieves all the IDs of a given content type
+		// arguments: type
+		$this->getAllOfType = $settings["getAllOfType"];
+
     // logger exchange
 		$this->logger = $settings["logger"];
 
@@ -17,6 +21,9 @@ class Director
     // function that tests whether an item can be pushed to elasticsearch
     // arguments: id, type
 		$this->saveTest = $settings["saveTest"];
+
+    // types of content that can be pushed to elasticsearch
+    $this->types = $settings["types"];
 
     $this->setupGearmanClient($settings["servers"]);
 	}
@@ -59,7 +66,15 @@ class Director
 
 	public function reindex()
 	{
-		return $this->gearmanClient->doNormal("{$this->namespace}_elasticsearch_reindex", json_encode(array()));
+		$data = array();
+
+		foreach ($this->types as $type) {
+			$data[$type] = call_user_func($this->getAllOfType, $type);
+		}
+
+		return $this->gearmanClient->doNormal("{$this->namespace}_elasticsearch_reindex", json_encode(array(
+			"data" => $data
+		)));
 	}
 
 }
